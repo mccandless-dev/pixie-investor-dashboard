@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixie: Interactive Capital Strategy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Professional -->
+    <!-- Application Structure Plan: A single-page dashboard application designed for investor clarity. The structure prioritizes the investment thesis, moving from the high-level opportunity to the specific funding ask and potential returns. It uses thematic sections with interactive elements (charts, calculators, clickable diagrams) to make dense information from the business plan digestible and engaging. This non-linear, dashboard approach allows investors to quickly access and understand key data points, which is more effective than a linear document for decision-making. -->
+    <!-- Visualization & Content Choices: 
+        - Opportunity Metrics (£150bn, 90%): Goal: Inform/Impress -> Method: JS Animated Counters -> Justification: Grabs attention.
+        - Hindsight-Insight-Foresight: Goal: Explain Process -> Method: HTML/CSS Interactive Diagram -> Justification: Simplifies a core concept interactively.
+        - Market Size (TAM/SAM/SOM): Goal: Compare -> Method: Chart.js Donut Chart -> Justification: Visualizes market scale effectively.
+        - Funding & Use of Funds: Goal: Inform -> Method: Chart.js Donut Chart -> Justification: Clearly shows capital allocation.
+        - EIS Returns: Goal: Engage/Inform -> Method: JS Interactive Calculator -> Justification: Personalizes the tax benefit for investors.
+        - Financial Forecast: Goal: Show Trends -> Method: Chart.js Bar Chart -> Justification: Standard, clear view of financial progression.
+        - Product Roadmap: Goal: Organize/Show Change -> Method: HTML/CSS Interactive Timeline -> Justification: More engaging than a list for showing temporal progress.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #2c3e50;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #4A90E2;
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+            padding-left: 2.5rem;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0.25rem;
+            width: 1px;
+            height: 100%;
+            background-color: #CBD5E1;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 0.25rem;
+            height: 1.25rem;
+            width: 1.25rem;
+            border-radius: 9999px;
+            border: 2px solid white;
+            background-color: #4A90E2;
+            z-index: 10;
+        }
+        .interactive-diagram-item {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .interactive-diagram-item.active {
+            border-color: #4A90E2;
+            background-color: #EBF4FF;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl font-bold text-[#4A90E2]">Pixie</span>
+                <span class="text-2xl font-semibold text-gray-700">Investor Dashboard</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#opportunity" class="nav-link text-gray-600 font-medium">Opportunity</a>
+                <a href="#funding" class="nav-link text-gray-600 font-medium">Funding</a>
+                <a href="#financials" class="nav-link text-gray-600 font-medium">Financials</a>
+                <a href="#roadmap" class="nav-link text-gray-600 font-medium">Roadmap</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="opportunity" class="text-center mb-24">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Systematising Success in a £1.3 Trillion UK Tech Market</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-12">Pixie is an AI-native platform addressing the most significant inefficiency in the venture ecosystem. We are turning the high-risk, chaotic art of scaling a startup into a data-driven, systematic science.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="stat-card">
+                    <p class="text-5xl font-bold text-[#4A90E2]" data-target="90" id="failureRate">0</p>
+                    <p class="text-lg font-medium text-gray-700 mt-2">Startup Failure Rate (%)</p>
+                    <p class="text-gray-500 mt-1">The systemic crisis Pixie is built to solve.</p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-5xl font-bold text-[#4A90E2]" data-target="150" id="marketOpportunity">0</p>
+                    <p class="text-lg font-medium text-gray-700 mt-2">Unrealised Opportunity (£bn)</p>
+                    <p class="text-gray-500 mt-1">Value unlocked by a 1% improvement in the UK scale-up rate.</p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-5xl font-bold text-[#4A90E2]" data-target="316" id="tam">0</p>
+                    <p class="text-lg font-medium text-gray-700 mt-2">Global TAM ($bn)</p>
+                    <p class="text-gray-500 mt-1">Across analytics, VC software, and ecosystem services.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="solution" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-4">The Pixie Solution: The 'ScaleUp DNA'</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">This section introduces Pixie's core intellectual property. Our proprietary methodology transforms raw data into predictive, actionable guidance, moving founders from guesswork to a clear, evidence-based growth plan. Click each stage to learn more about how we decode success.</p>
+            
+            <div id="interactive-diagram" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div id="diagram-hindsight" class="interactive-diagram-item stat-card text-center active">
+                    <h3 class="text-xl font-semibold mb-2">1. Hindsight</h3>
+                    <p class="text-gray-500">The Foundation: What Worked</p>
+                </div>
+                <div id="diagram-insight" class="interactive-diagram-item stat-card text-center">
+                    <h3 class="text-xl font-semibold mb-2">2. Insight</h3>
+                    <p class="text-gray-500">The Diagnosis: Where You Are</p>
+                </div>
+                <div id="diagram-foresight" class="interactive-diagram-item stat-card text-center">
+                    <h3 class="text-xl font-semibold mb-2">3. Foresight</h3>
+                    <p class="text-gray-500">The Guidance: What To Do Next</p>
+                </div>
+            </div>
+            <div id="diagram-content" class="bg-white p-6 rounded-lg shadow-md min-h-[150px]">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <section id="market" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Capturing a Multi-Billion Dollar Market</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">This section visualizes the scale of the market Pixie is addressing. Our strategy targets a specific, high-value segment within a massive global market, creating a clear path to significant revenue. The chart below illustrates the Total Addressable Market (TAM), our initial Serviceable Addressable Market (SAM), and the immediate Serviceable Obtainable Market (SOM).</p>
+            <div class="chart-container mx-auto">
+                <canvas id="marketChart"></canvas>
+            </div>
+        </section>
+
+        <section id="funding" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-4">The Capital Strategy: A Two-Phase Raise</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">This section details our structured funding plan, designed to fuel growth while optimizing valuation at each key milestone. We are initiating a £350,000 SAFE round to launch our MVP, followed by a £1.8M Seed round to scale. For UK angel investors, the SAFE round is enhanced by the significant tax advantages of the Enterprise Investment Scheme (EIS).</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                
+                <div class="stat-card p-8">
+                    <h3 class="text-2xl font-bold mb-2">Phase 1: SAFE Round (Q4 2024)</h3>
+                    <p class="text-gray-600 mb-6">To fund MVP launch and secure early market validation.</p>
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between items-baseline">
+                            <span class="font-semibold text-gray-700">The Ask:</span>
+                            <span class="text-2xl font-bold text-[#4A90E2]">£350,000</span>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <span class="font-semibold text-gray-700">Valuation Cap:</span>
+                            <span class="text-2xl font-bold text-[#4A90E2]">£4.0M</span>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <span class="font-semibold text-gray-700">Discount:</span>
+                            <span class="text-2xl font-bold text-[#4A90E2]">20%</span>
+                        </div>
+                    </div>
+                    <h4 class="font-semibold text-gray-800 mb-4 text-center">Use of Funds</h4>
+                    <div class="chart-container h-64 max-h-64">
+                        <canvas id="useOfFundsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="stat-card p-8">
+                    <h3 class="text-2xl font-bold mb-2">The EIS Advantage Calculator</h3>
+                    <p class="text-gray-600 mb-6">See how EIS tax relief enhances your investment. Enter an amount to see the potential impact on a 5x return and in a total loss scenario.</p>
+                    
+                    <div>
+                        <label for="investmentAmount" class="block text-sm font-medium text-gray-700">Your Investment (£)</label>
+                        <input type="number" id="investmentAmount" value="50000" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4A90E2] focus:border-[#4A90E2] sm:text-sm">
+                    </div>
+                    
+                    <div class="mt-6 border-t pt-6 space-y-4">
+                        <h4 class="font-semibold text-gray-800">Illustrative 5x Return Scenario:</h4>
+                        <div class="flex justify-between text-sm"><span>Net Cost of Investment:</span> <span id="netCost" class="font-bold">£35,000</span></div>
+                        <div class="flex justify-between text-sm"><span>Net Return (Tax-Free):</span> <span id="netReturn" class="font-bold">£200,000</span></div>
+                        <div class="flex justify-between text-lg"><strong>Effective Multiple:</strong> <strong id="effectiveMultiple" class="text-[#4A90E2]">5.71x</strong></div>
+                        
+                        <h4 class="font-semibold text-gray-800 pt-4 border-t">Illustrative Total Loss Scenario:</h4>
+                        <div class="flex justify-between text-sm"><span>Total Tax Relief:</span> <span id="totalRelief" class="font-bold">£30,750</span></div>
+                        <div class="flex justify-between text-lg"><strong>Net Capital at Risk:</strong> <strong id="netRisk" class="text-red-600">£19,250</strong></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="financials" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Financial Projections & Key Metrics</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">This section presents our five-year financial forecast, demonstrating a clear and credible path to significant revenue and profitability. The projections are driven by scalable SaaS and enterprise revenue streams, underpinned by realistic, data-informed assumptions about user adoption and market expansion.</p>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold text-center mb-4">5-Year Financial Summary (£)</h3>
+                <div class="chart-container h-96 max-h-96">
+                    <canvas id="financialsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="mb-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Accelerated Product Roadmap</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">This section outlines our strategic product roadmap. We have accelerated our timeline to demonstrate execution capability and align with our funding strategy. Each release is designed to add a new layer of value and a corresponding revenue stream, creating a clear path from a powerful diagnostic tool to a comprehensive scaling ecosystem.</p>
+            <div class="max-w-4xl mx-auto">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <p class="font-semibold text-gray-500">Mid-October 2024</p>
+                    <h3 class="text-xl font-bold mt-1">MVP Launch</h3>
+                    <p class="text-gray-600 mt-2">Delivers the core diagnostic value proposition: automated data ingestion for 60+ benchmarks, the first 'ScaleUp Score' engine, and the initial 'Growth Roadmap' generator.</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <p class="font-semibold text-gray-500">Q1 2025</p>
+                    <h3 class="text-xl font-bold mt-1">V1 Release: ScaleUp SatNav</h3>
+                    <p class="text-gray-600 mt-2">Introduces the execution layer with real-time performance tracking, OKR synchronisation, and proactive alerts to keep founders on course.</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <p class="font-semibold text-gray-500">Q2 2025</p>
+                    <h3 class="text-xl font-bold mt-1">V2 Release: ScaleUp Squad</h3>
+                    <p class="text-gray-600 mt-2">Launches the first human-in-the-loop feature, connecting founders with a curated network of on-demand specialist expertise and sprint teams.</p>
+                </div>
+                <div class="timeline-item">
+                     <div class="timeline-dot"></div>
+                    <p class="font-semibold text-gray-500">H2 2025 - 2026</p>
+                    <h3 class="text-xl font-bold mt-1">V3-V6 Releases: Ecosystem Expansion</h3>
+                    <p class="text-gray-600 mt-2">Phased rollout of the full ecosystem vision, including 'ScaleUp Tribe' (community), 'ScaleUp Store' (marketplace), and 'ScaleUp Fund' (smart funding).</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p class="text-xl font-bold">Pixie</p>
+            <p class="mt-2 text-gray-400">Systematising the science of scaling.</p>
+            <p class="mt-4 text-sm text-gray-500">This document is for informational purposes only. It is not an offer to sell or a solicitation of an offer to buy any securities.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            function animateCounter(element) {
+                const target = +element.getAttribute('data-target');
+                const duration = 2000;
+                const stepTime = 20;
+                const totalSteps = duration / stepTime;
+                const increment = target / totalSteps;
+                let current = 0;
+
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        element.innerText = target.toLocaleString();
+                        clearInterval(timer);
+                    } else {
+                        element.innerText = Math.ceil(current).toLocaleString();
+                    }
+                }, stepTime);
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounter(entry.target);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            document.querySelectorAll('[data-target]').forEach(el => observer.observe(el));
+
+            const diagramContentData = {
+                hindsight: {
+                    title: '1. Hindsight: The Foundation',
+                    text: 'This stage involves the continuous ingestion and analysis of vast datasets related to successfully scaled companies. By processing data from public registers, commercial databases, and academic research, Pixie has built its core IP—the \'ScaleUp DNA\' library. This is the foundational knowledge base of what has demonstrably worked in the past.'
+                },
+                insight: {
+                    title: '2. Insight: The Diagnosis',
+                    text: 'A user\'s startup is onboarded, and its data is ingested via APIs and direct input. The platform then indexes the startup\'s unique profile against the \'ScaleUp DNA\' benchmarks. The output is the \'Pixie ScaleUp Score\'—a real-time, objective measure of the company\'s current scaling potential and a clear diagnosis of its strengths and weaknesses.'
+                },
+                foresight: {
+                    title: '3. Foresight: The Guidance',
+                    text: 'This is where the platform\'s AI engine provides predictive and prescriptive value. Based on the \'ScaleUp Score\', the AI generates a dynamic \'Growth Roadmap\'. This is not a static plan but a living strategy that maps out prioritised actions, operationalised through the \'ScaleUp SatNav\' with real-time tracking and alerts.'
+                }
+            };
+
+            const diagramContentContainer = document.getElementById('diagram-content');
+            const diagramItems = document.querySelectorAll('.interactive-diagram-item');
+
+            function updateDiagramContent(key) {
+                const content = diagramContentData[key];
+                diagramContentContainer.innerHTML = `
+                    <h3 class="text-xl font-bold mb-2 text-[#4A90E2]">${content.title}</h3>
+                    <p class="text-gray-600">${content.text}</p>
+                `;
+                diagramItems.forEach(item => item.classList.remove('active'));
+                document.getElementById(`diagram-${key}`).classList.add('active');
+            }
+
+            diagramItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const key = item.id.split('-')[1];
+                    updateDiagramContent(key);
+                });
+            });
+            
+            updateDiagramContent('hindsight');
+
+            const marketCtx = document.getElementById('marketChart').getContext('2d');
+            new Chart(marketCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Global TAM ($316B)', 'UK/EU SAM ($55B)', 'Global SOM ($275M+)'],
+                    datasets: [{
+                        data: [316, 55, 0.275],
+                        backgroundColor: ['#2c3e50', '#4A90E2', '#C8A47E'],
+                        borderColor: '#F8F7F4',
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Market Opportunity (in Billions USD)'
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        if (context.label.includes('SOM')) {
+                                            label += '£' + (context.parsed * 1000).toFixed(0) + 'M';
+                                        } else {
+                                            label += '$' + context.parsed.toFixed(1) + 'B';
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const useOfFundsCtx = document.getElementById('useOfFundsChart').getContext('2d');
+            new Chart(useOfFundsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Product Development (50%)', 'GTM & Validation (30%)', 'Operational Runway (20%)'],
+                    datasets: [{
+                        data: [50, 30, 20],
+                        backgroundColor: ['#4A90E2', '#5F9EA0', '#C8A47E'],
+                        borderColor: '#ffffff',
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                           display: false
+                        },
+                         tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    return context.label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const financialsCtx = document.getElementById('financialsChart').getContext('2d');
+            new Chart(financialsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['FY 2025', 'FY 2026', 'FY 2027', 'FY 2028', 'FY 2029'],
+                    datasets: [
+                        {
+                            label: 'Gross Revenue',
+                            data: [0.5, 1.47, 4.64, 16.22, 42.59],
+                            backgroundColor: '#4A90E2',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Gross Profit',
+                            data: [0.4, 0.68, 4.26, 11.51, 25.63],
+                            backgroundColor: '#5F9EA0',
+                             borderRadius: 4,
+                        },
+                        {
+                            label: 'EBITDA',
+                            data: [-0.3, -1.01, 1.99, 9.76, 14.04],
+                            backgroundColor: '#C8A47E',
+                             borderRadius: 4,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '£' + value + 'M';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += '£' + context.parsed.y.toFixed(2) + 'M';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const investmentInput = document.getElementById('investmentAmount');
+            const netCostEl = document.getElementById('netCost');
+            const netReturnEl = document.getElementById('netReturn');
+            const effectiveMultipleEl = document.getElementById('effectiveMultiple');
+            const totalReliefEl = document.getElementById('totalRelief');
+            const netRiskEl = document.getElementById('netRisk');
+            
+            function calculateEIS() {
+                const investment = parseFloat(investmentInput.value) || 0;
+                const incomeTaxRelief = investment * 0.30;
+                const netCost = investment - incomeTaxRelief;
+                
+                const exitValue = investment * 5;
+                const netReturn = exitValue - investment;
+                const effectiveMultiple = netReturn / netCost;
+                
+                const netLoss = investment - incomeTaxRelief;
+                const lossRelief = netLoss * 0.45;
+                const totalRelief = incomeTaxRelief + lossRelief;
+                const netRisk = investment - totalRelief;
+
+                netCostEl.textContent = '£' + netCost.toLocaleString('en-GB', {maximumFractionDigits: 0});
+                netReturnEl.textContent = '£' + netReturn.toLocaleString('en-GB', {maximumFractionDigits: 0});
+                effectiveMultipleEl.textContent = effectiveMultiple.toFixed(2) + 'x';
+                totalReliefEl.textContent = '£' + totalRelief.toLocaleString('en-GB', {maximumFractionDigits: 0});
+                netRiskEl.textContent = '£' + netRisk.toLocaleString('en-GB', {maximumFractionDigits: 0});
+            }
+            
+            investmentInput.addEventListener('input', calculateEIS);
+            calculateEIS();
+            
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
